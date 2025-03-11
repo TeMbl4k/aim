@@ -78,12 +78,14 @@ function createCircle(areaSize, circleSize) {
     circle.classList.add('circle');
     const size = circleSize;
 
-    // Учитываем отступ сверху для интерфейса
-    const interfaceHeight = 60; // Высота интерфейса
-    const maxX = window.innerWidth * areaSize - size;
-    const maxY = (window.innerHeight - interfaceHeight) * areaSize - size;
+    // Получаем размеры игрового поля
+    const gameAreaRect = gameArea.getBoundingClientRect();
+    const maxX = gameAreaRect.width * areaSize - size;
+    const maxY = gameAreaRect.height * areaSize - size;
+
+    // Позиционируем кружки внутри игрового поля
     const x = Math.random() * maxX;
-    const y = Math.random() * maxY + interfaceHeight; // Добавляем отступ сверху
+    const y = Math.random() * maxY;
 
     circle.style.width = `${size}px`;
     circle.style.height = `${size}px`;

@@ -3,6 +3,11 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
 }
 
 .interface {
@@ -40,12 +45,15 @@ body {
 
 #game-area.fullscreen {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%; /* Ширина игрового поля */
+    height: 80%; /* Высота игрового поля */
     background-color: #fff;
     z-index: 1; /* Игровое поле под интерфейсом */
+    border: 2px solid #000;
+    box-sizing: border-box;
 }
 
 .circle {
