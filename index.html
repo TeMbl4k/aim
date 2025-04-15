@@ -5,52 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мини-игра: Кликни по кружкам!</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="aim.js"></script>
 </head>
 <body>
-    <div class="interface">
-        <div id="score">Очки: 0</div>
-        <div id="timer">Время: 30</div>
-        <button id="stop-btn" disabled>Стоп</button>
+    <h2>Истории пользователя</h2>
+    <ol>
+        <li>Мне, как пользователю, нужна возможность наблюдения за процессом игры для изучения поведения реакции на клики.</li>
+        <li>Мне, как пользователю, нужна возможность выбора сложности и параметров игры для персонализации игрового процесса.</li>
+        <li>Мне, как пользователю, нужна возможность ставить игру на паузу для изучения текущего состояния или для возможности переключения на другие виды деятельности.</li>
+    </ol>
+    <h2>Истории администратора сайта</h2>
+    <ol>
+        <li>Мне, как администратору сайта, нужна возможность указания скорости появления кружков для управления сложностью.</li>
+        <li>Мне, как администратору сайта, нужна возможность указания размера области появления кружков для управления параметрами игры.</li>
+        <li>Мне, как администратору сайта, нужна возможность указания размера кружков для управления внешним видом приложения.</li>
+    </ol>
+    <h2>Истории разработчика приложения</h2>
+    <ol>
+        <li>Мне, как разработчику приложения, нужен класс AimGameElement для управления поведением игры.</li>
+        <li>Мне, как разработчику приложения, нужны методы для управления состоянием игры и генерации кружков.</li>
+        <li>Мне, как разработчику приложения, нужен механизм для проверки корректности параметров игры.</li>
+    </ol>
+    <div class="games-row">
+      <aim-game id="aim_game_large" data-circle-speed="500" data-area-size="1" data-circle-size="60"></aim-game>
+      <aim-game id="aim_game_small" data-circle-speed="1500" data-area-size="0.2" data-circle-size="20"></aim-game>
     </div>
-    <div id="game-area" class="fullscreen"></div>
-
-    <!-- Модальное окно для выбора сложности и перезапуска -->
-    <div id="start-modal" class="modal">
-        <div class="modal-content">
-            <h2>Настройки игры</h2>
-            <label for="difficulty">Сложность:</label>
-            <select id="difficulty">
-                <option value="1500">Легко</option>
-                <option value="1000">Средне</option>
-                <option value="500">Сложно</option>
-            </select>
-            <label for="area-size">Площадь появления кружков (%):</label>
-            <input type="range" id="area-size" min="10" max="100" value="100">
-            <label for="circle-size">Размер кружков (от 20 до 70px):</label>
-            <input type="range" id="circle-size" min="20" max="70" value="40">
-            <button id="start-btn">Начать игру</button>
-        </div>
-    </div>
-
-    <!-- Модальное окно для завершения игры -->
-    <div id="end-modal" class="modal">
-        <div class="modal-content">
-            <h2>Игра окончена!</h2>
-            <p id="final-score">Ваш счет: 0</p>
-            <label for="difficulty-end">Сложность:</label>
-            <select id="difficulty-end">
-                <option value="1500">Легко</option>
-                <option value="1000">Средне</option>
-                <option value="500">Сложно</option>
-            </select>
-            <label for="area-size-end">Площадь появления кружков (%):</label>
-            <input type="range" id="area-size-end" min="10" max="100" value="100">
-            <label for="circle-size-end">Размер кружков (от 20 до 70px):</label>
-            <input type="range" id="circle-size-end" min="20" max="70" value="40">
-            <button id="restart-btn">Перезапустить игру</button>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
