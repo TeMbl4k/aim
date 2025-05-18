@@ -1,253 +1,273 @@
 class AimGameElement extends HTMLElement {
+  constructor() {
+    super();
+    this.score = 0;
+    this.gameTime = 30;
+    this.circleSpeed = 500;
+    this.circleSize = 30;
+    this.lastScore = 0;
+    this.isEnd = false;
+    this.gameInterval = null;
+    this.circleInterval = null;
+    
+    // Создаем элементы
+    this.gameArea = document.createElement('div');
+    this.gameArea.classList.add('game-area');
+    
+    this.startModal = document.createElement('div');
+    this.startModal.classList.add('start-modal');
+    
+    this.stopBtn = document.createElement('button');
+    this.stopBtn.textContent = 'Стоп';
+    this.stopBtn.disabled = true;
+    this.stopBtn.classList.add('stop-btn', 'stop-btn-top');
+    
+    this.scoreDisplay = document.createElement('div');
+    this.scoreDisplay.textContent = 'Очки: 0';
+    this.scoreDisplay.classList.add('score-corner');
+    
+    this.timerDisplay = document.createElement('div');
+    this.timerDisplay.textContent = 'Время: 30';
+    this.timerDisplay.classList.add('timer-corner');
+    
+    // Инициализируем модальное окно
+    this.initModal();
+    
+    // Добавляем стили
+    this.addStyles();
+  }
+
   connectedCallback() {
-    const gameArea = document.createElement('div');
-    gameArea.classList.add('game-area');
-    this.appendChild(gameArea);
+    this.appendChild(this.gameArea);
+    this.appendChild(this.startModal);
+    this.gameArea.appendChild(this.stopBtn);
+    this.appendChild(this.scoreDisplay);
+    this.appendChild(this.timerDisplay);
+    
+    this.showStartModal();
+    this.setupEventListeners();
+  }
 
-    const startModal = document.createElement('div');
-    startModal.classList.add('start-modal');
-    this.appendChild(startModal);
-
-    const stopBtn = document.createElement('button');
-    stopBtn.textContent = 'Стоп';
-    stopBtn.disabled = true;
-    stopBtn.classList.add('stop-btn', 'stop-btn-top');
-    gameArea.appendChild(stopBtn);
-
-    const scoreDisplay = document.createElement('div');
-    scoreDisplay.textContent = 'Очки: 0';
-    scoreDisplay.classList.add('score-corner');
-    this.appendChild(scoreDisplay);
-
-    const timerDisplay = document.createElement('div');
-    timerDisplay.textContent = 'Время: 30';
-    timerDisplay.classList.add('timer-corner');
-    this.appendChild(timerDisplay);
-
-    // --- Модальное окно выбора параметров ---
-    startModal.innerHTML = '';
+  initModal() {
+    this.startModal.innerHTML = '';
     const modalContent = document.createElement('div');
     modalContent.classList.add('modal-content');
-    startModal.appendChild(modalContent);
+    this.startModal.appendChild(modalContent);
 
-    const h2 = document.createElement('h2');
-    h2.textContent = 'Тренировка';
-    modalContent.appendChild(h2);
+    this.h2 = document.createElement('h2');
+    this.h2.textContent = 'Тренировка';
+    modalContent.appendChild(this.h2);
 
-    const labelTime = document.createElement('label');
-    labelTime.textContent = 'Время (сек):';
-    labelTime.setAttribute('for', 'game-time');
-    modalContent.appendChild(labelTime);
+    // Время игры
+    this.labelTime = document.createElement('label');
+    this.labelTime.textContent = 'Время (сек):';
+    this.labelTime.setAttribute('for', 'game-time');
+    modalContent.appendChild(this.labelTime);
     
-    const timeValueSpan = document.createElement('span');
-    timeValueSpan.classList.add('range-value');
-    timeValueSpan.textContent = '30';
-    modalContent.appendChild(timeValueSpan);
+    this.timeValueSpan = document.createElement('span');
+    this.timeValueSpan.classList.add('range-value');
+    this.timeValueSpan.textContent = '30';
+    modalContent.appendChild(this.timeValueSpan);
     
-    const inputTime = document.createElement('input');
-    inputTime.type = 'range';
-    inputTime.min = 5;
-    inputTime.max = 300;
-    inputTime.value = 30;
-    inputTime.step = 5;
-    inputTime.id = 'game-time';
-    inputTime.addEventListener('input', () => {
-      timeValueSpan.textContent = inputTime.value;
+    this.inputTime = document.createElement('input');
+    this.inputTime.type = 'range';
+    this.inputTime.min = 5;
+    this.inputTime.max = 300;
+    this.inputTime.value = 30;
+    this.inputTime.step = 5;
+    this.inputTime.id = 'game-time';
+    modalContent.appendChild(this.inputTime);
+
+    // Размер кружка
+    this.labelCircleSize = document.createElement('label');
+    this.labelCircleSize.textContent = 'Размер кружка (px):';
+    this.labelCircleSize.setAttribute('for', 'circle-size');
+    modalContent.appendChild(this.labelCircleSize);
+    
+    this.circleSizeValueSpan = document.createElement('span');
+    this.circleSizeValueSpan.classList.add('range-value');
+    this.circleSizeValueSpan.textContent = '30';
+    modalContent.appendChild(this.circleSizeValueSpan);
+    
+    this.inputCircleSize = document.createElement('input');
+    this.inputCircleSize.type = 'range';
+    this.inputCircleSize.min = 10;
+    this.inputCircleSize.max = 100;
+    this.inputCircleSize.value = 30;
+    this.inputCircleSize.step = 5;
+    this.inputCircleSize.id = 'circle-size';
+    modalContent.appendChild(this.inputCircleSize);
+
+    // Скорость появления
+    this.labelSpeed = document.createElement('label');
+    this.labelSpeed.textContent = 'Скорость появления (мс):';
+    this.labelSpeed.setAttribute('for', 'circle-speed');
+    modalContent.appendChild(this.labelSpeed);
+    
+    this.speedValueSpan = document.createElement('span');
+    this.speedValueSpan.classList.add('range-value');
+    this.speedValueSpan.textContent = '500';
+    modalContent.appendChild(this.speedValueSpan);
+    
+    this.inputSpeed = document.createElement('input');
+    this.inputSpeed.type = 'range';
+    this.inputSpeed.min = 200;
+    this.inputSpeed.max = 1000;
+    this.inputSpeed.value = 500;
+    this.inputSpeed.step = 10;
+    this.inputSpeed.id = 'circle-speed';
+    modalContent.appendChild(this.inputSpeed);
+
+    // Кнопки
+    this.startBtn = document.createElement('button');
+    this.startBtn.textContent = 'Начать игру';
+    modalContent.appendChild(this.startBtn);
+    
+    this.restartBtn = document.createElement('button');
+    this.restartBtn.textContent = 'Сыграть ещё раз';
+    this.restartBtn.className = 'restart-btn';
+    this.restartBtn.style.display = 'none';
+    modalContent.appendChild(this.restartBtn);
+    
+    this.resultMsg = document.createElement('div');
+    this.resultMsg.className = 'result-msg';
+    modalContent.insertBefore(this.resultMsg, this.h2.nextSibling);
+    
+    this.startModal.style.display = 'block';
+  }
+
+  addStyles() {
+    const link = document.createElement('link');
+    if (!document.querySelector('link[href="aim.css"]')) {
+      link.rel = "stylesheet";
+      link.href = "aim.css";
+      document.head.appendChild(link);
+    }
+  }
+
+  setupEventListeners() {
+    // Обработчики для ползунков
+    this.inputTime.addEventListener('input', () => {
+      this.timeValueSpan.textContent = this.inputTime.value;
     });
-    modalContent.appendChild(inputTime);
-
-    const labelCircleSize = document.createElement('label');
-    labelCircleSize.textContent = 'Размер кружка (px):';
-    labelCircleSize.setAttribute('for', 'circle-size');
-    modalContent.appendChild(labelCircleSize);
     
-    const circleSizeValueSpan = document.createElement('span');
-    circleSizeValueSpan.classList.add('range-value');
-    circleSizeValueSpan.textContent = '30';
-    modalContent.appendChild(circleSizeValueSpan);
-    
-    const inputCircleSize = document.createElement('input');
-    inputCircleSize.type = 'range';
-    inputCircleSize.min = 10;
-    inputCircleSize.max = 100;
-    inputCircleSize.value = 30;
-    inputCircleSize.step = 5;
-    inputCircleSize.id = 'circle-size';
-    inputCircleSize.addEventListener('input', () => {
-      circleSizeValueSpan.textContent = inputCircleSize.value;
+    this.inputCircleSize.addEventListener('input', () => {
+      this.circleSizeValueSpan.textContent = this.inputCircleSize.value;
     });
-    modalContent.appendChild(inputCircleSize);
-
-    const labelSpeed = document.createElement('label');
-    labelSpeed.textContent = 'Скорость появления (мс):';
-    labelSpeed.setAttribute('for', 'circle-speed');
-    modalContent.appendChild(labelSpeed);
     
-    const speedValueSpan = document.createElement('span');
-    speedValueSpan.classList.add('range-value');
-    speedValueSpan.textContent = '500';
-    modalContent.appendChild(speedValueSpan);
-    
-    const inputSpeed = document.createElement('input');
-    inputSpeed.type = 'range';
-    inputSpeed.min = 200;
-    inputSpeed.max = 1000;
-    inputSpeed.value = 500;
-    inputSpeed.step = 10;
-    inputSpeed.id = 'circle-speed';
-    inputSpeed.addEventListener('input', () => {
-      speedValueSpan.textContent = inputSpeed.value;
+    this.inputSpeed.addEventListener('input', () => {
+      this.speedValueSpan.textContent = this.inputSpeed.value;
     });
-    modalContent.appendChild(inputSpeed);
 
-    const startBtn = document.createElement('button');
-    startBtn.textContent = 'Начать игру';
-    modalContent.appendChild(startBtn);
-    startModal.style.display = 'block';
+    // Кнопки
+    this.startBtn.addEventListener('click', () => {
+      this.hideStartModal();
+      this.gameTime = parseInt(this.inputTime.value, 10);
+      this.circleSpeed = parseInt(this.inputSpeed.value, 10);
+      this.circleSize = parseInt(this.inputCircleSize.value, 10);
+      this.startGame();
+    });
 
-    // --- END Модальное окно выбора параметров ---
+    this.restartBtn.addEventListener('click', () => this.restartGame());
+    this.stopBtn.addEventListener('click', () => this.endGame());
+  }
 
-    // При открытии модального окна параметры берутся из data-атрибутов, если есть
-    if (this.dataset.circleSize) inputCircleSize.value = this.dataset.circleSize;
-    if (this.dataset.circleSpeed) inputSpeed.value = this.dataset.circleSpeed;
-    if (this.dataset.time) inputTime.value = this.dataset.time;
+  showStartModal(withResult = false) {
+    this.startModal.classList.add('active');
+    this.startModal.style.display = '';
+    this.stopBtn.style.display = 'none';
+    
+    if (withResult) {
+      this.resultMsg.textContent = `Ваш результат: ${this.lastScore} очков`;
+      this.startBtn.style.display = 'none';
+      this.restartBtn.style.display = '';
+    } else {
+      this.resultMsg.textContent = '';
+      this.startBtn.style.display = '';
+      this.restartBtn.style.display = 'none';
+    }
+  }
 
-    let score = 0;
-    let gameTime = parseInt(inputTime.value, 10);
-    let gameInterval;
-    let circleInterval;
-    let circleSpeed = parseInt(inputSpeed.value, 10);
-    let circleSize = parseInt(inputCircleSize.value, 10);
-    let lastScore = 0;
-    let isEnd = false;
-    let restartBtn = null;
-    let resultMsg = null;
+  hideStartModal() {
+    this.startModal.classList.remove('active');
+    this.startModal.style.display = 'none';
+  }
 
-    function showStartModal(withResult = false) {
-      startModal.classList.add('active');
-      startModal.style.display = '';
-      stopBtn.style.display = 'none';
-      if (withResult) {
-        if (!resultMsg) {
-          resultMsg = document.createElement('div');
-          resultMsg.className = 'result-msg';
-          modalContent.insertBefore(resultMsg, h2.nextSibling);
-        }
-        resultMsg.textContent = `Ваш результат: ${lastScore} очков`;
-        startBtn.style.display = 'none';
-        if (!restartBtn) {
-          restartBtn = document.createElement('button');
-          restartBtn.textContent = 'Сыграть ещё раз';
-          restartBtn.className = 'restart-btn';
-          modalContent.appendChild(restartBtn);
-        }
-        restartBtn.style.display = '';
-      } else {
-        if (resultMsg) resultMsg.textContent = '';
-        startBtn.style.display = '';
-        if (restartBtn) restartBtn.style.display = 'none';
+  restartGame() {
+    this.hideStartModal();
+    this.score = 0;
+    this.gameTime = parseInt(this.inputTime.value, 10);
+    this.circleSpeed = parseInt(this.inputSpeed.value, 10);
+    this.circleSize = parseInt(this.inputCircleSize.value, 10);
+    this.startGame();
+  }
+
+  startGame() {
+    this.score = 0;
+    this.scoreDisplay.textContent = 'Очки: 0';
+    this.timerDisplay.textContent = `Время: ${this.gameTime}`;
+    this.gameArea.innerHTML = '';
+    this.gameArea.appendChild(this.stopBtn);
+    this.gameArea.appendChild(this.scoreDisplay);
+    this.gameArea.appendChild(this.timerDisplay);
+    
+    clearInterval(this.gameInterval);
+    clearInterval(this.circleInterval);
+    
+    this.stopBtn.disabled = false;
+    this.stopBtn.style.display = '';
+    
+    this.circleInterval = setInterval(() => this.createCircle(), this.circleSpeed);
+    
+    this.gameInterval = setInterval(() => {
+      this.gameTime--;
+      this.timerDisplay.textContent = `Время: ${this.gameTime}`;
+      if (this.gameTime <= 0) {
+        this.endGame();
       }
-    }
-    function hideStartModal() {
-      startModal.classList.remove('active');
-      startModal.style.display = 'none';
-    }
-    showStartModal();
+    }, 1000);
+  }
 
-    startBtn.addEventListener('click', () => {
-      hideStartModal();
-      gameTime = parseInt(inputTime.value, 10);
-      circleSpeed = parseInt(inputSpeed.value, 10);
-      circleSize = parseInt(inputCircleSize.value, 10);
-      startGame();
+  createCircle() {
+    const circle = document.createElement('div');
+    circle.classList.add('circle');
+
+    const gameAreaRect = this.gameArea.getBoundingClientRect();
+    const gameAreaWidth = gameAreaRect.width;
+    const gameAreaHeight = gameAreaRect.height;
+
+    const areaWidth = gameAreaWidth * 0.8;
+    const areaHeight = gameAreaHeight * 0.8;
+
+    const offsetX = (gameAreaWidth - areaWidth) / 2;
+    const offsetY = (gameAreaHeight - areaHeight) / 2;
+
+    const x = Math.random() * areaWidth + offsetX;
+    const y = Math.random() * areaHeight + offsetY;
+
+    circle.style.width = `${this.circleSize}px`;
+    circle.style.height = `${this.circleSize}px`;
+    circle.style.left = `${x}px`;
+    circle.style.top = `${y}px`;
+    circle.style.backgroundColor = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
+
+    circle.addEventListener('click', () => {
+      this.score++;
+      this.scoreDisplay.textContent = `Очки: ${this.score}`;
+      circle.remove();
     });
 
-    function restartGame() {
-      hideStartModal();
-      score = 0;
-      gameTime = parseInt(inputTime.value, 10);
-      circleSpeed = parseInt(inputSpeed.value, 10);
-      circleSize = parseInt(inputCircleSize.value, 10);
-      startGame();
-    }
+    this.gameArea.appendChild(circle);
+  }
 
-    // Кнопка 'Сыграть ещё раз'
-    if (!restartBtn) {
-      restartBtn = document.createElement('button');
-      restartBtn.textContent = 'Сыграть ещё раз';
-      restartBtn.className = 'restart-btn';
-      restartBtn.style.display = 'none';
-      modalContent.appendChild(restartBtn);
-    }
-    restartBtn.addEventListener('click', restartGame);
-
-    stopBtn.addEventListener('click', () => {
-      endGame();
-    });
-
-    function startGame() {
-      score = 0;
-      scoreDisplay.textContent = 'Очки: 0';
-      timerDisplay.textContent = `Время: ${gameTime}`;
-      gameArea.innerHTML = '';
-      gameArea.appendChild(stopBtn);
-      gameArea.appendChild(scoreDisplay);
-      gameArea.appendChild(timerDisplay);
-      clearInterval(gameInterval);
-      clearInterval(circleInterval);
-      stopBtn.disabled = false;
-      stopBtn.style.display = '';
-      circleInterval = setInterval(() => createCircle(circleSize), circleSpeed);
-      gameInterval = setInterval(() => {
-        gameTime--;
-        timerDisplay.textContent = `Время: ${gameTime}`;
-        if (gameTime <= 0) {
-          endGame();
-        }
-      }, 1000);
-    }
-
-    function createCircle(size) {
-      const circle = document.createElement('div');
-      circle.classList.add('circle');
-
-      const gameAreaRect = gameArea.getBoundingClientRect();
-      const gameAreaWidth = gameAreaRect.width;
-      const gameAreaHeight = gameAreaRect.height;
-
-      const areaWidth = gameAreaWidth * 0.8;
-      const areaHeight = gameAreaHeight * 0.8;
-
-      const offsetX = (gameAreaWidth - areaWidth) / 2;
-      const offsetY = (gameAreaHeight - areaHeight) / 2;
-
-      const x = Math.random() * areaWidth + offsetX;
-      const y = Math.random() * areaHeight + offsetY;
-
-      circle.style.width = `${size}px`;
-      circle.style.height = `${size}px`;
-      circle.style.left = `${x}px`;
-      circle.style.top = `${y}px`;
-      circle.style.backgroundColor = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
-
-      circle.addEventListener('click', () => {
-        score++;
-        scoreDisplay.textContent = `Очки: ${score}`;
-        circle.remove();
-      });
-
-      gameArea.appendChild(circle);
-    }
-
-    function endGame() {
-      clearInterval(gameInterval);
-      clearInterval(circleInterval);
-      gameArea.innerHTML = '';
-      stopBtn.disabled = true;
-      stopBtn.style.display = 'none';
-      lastScore = score;
-      showStartModal(true);
-    }
+  endGame() {
+    clearInterval(this.gameInterval);
+    clearInterval(this.circleInterval);
+    this.gameArea.innerHTML = '';
+    this.stopBtn.disabled = true;
+    this.stopBtn.style.display = 'none';
+    this.lastScore = this.score;
+    this.showStartModal(true);
   }
 }
 
